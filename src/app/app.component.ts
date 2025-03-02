@@ -2,6 +2,11 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
+type taskObj = {
+   task:string;
+   isDone:boolean
+ }
+
 @Component({
   selector: 'app-root',
   standalone : true,
@@ -12,18 +17,33 @@ import { CommonModule } from '@angular/common';
 export class AppComponent {
   title = 'myProject';
   public task = '';
-  public list:string[]=[];
+  public list:taskObj[]=[];
   public editIndex: number | null = null;
-  public editedTask:string = ''
+  public editedTask:string = '';
+  public taskData : taskObj = {
+    task:'',
+    isDone:false
+  }
+ 
 
 
   ngOnInit(){
-    const storedList = localStorage.getItem('Task');
-    this.list = storedList ? JSON.parse(storedList):[]
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const storedList = localStorage.getItem('Task');
+      this.list = storedList ? JSON.parse(storedList) : [];
+    } else {
+      console.warn('localStorage is not available.');
+      this.list = [];
+    }
   }
   addTask(){
     if(this.task.trim()){
-      this.list.push(this.task.trim());
+      this.taskData = {
+        task:this.task.trim(),
+        isDone:false
+      }
+      this.list.push(this.taskData);
+      this.task = ''
       this.storeTolocal()
     }
   }
@@ -39,6 +59,19 @@ export class AppComponent {
   storeTolocal(){
     localStorage.setItem('Task',JSON.stringify(this.list));
   }
+  saveTask(index:number){
+    console.log("i am saved...")
+    if(this.editedTask.trim()){
+      this.list[index].task = this.editedTask.trim();
+      this.editIndex = null;
+      this.editedTask = '';
+      this.storeTolocal();
+    }
+  }
+  statusChange(index:number){
+    this.list[index].isDone = !this.list[index].isDone;
+    this.storeTolocal()
+  } 
 
   
 }
